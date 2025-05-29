@@ -5,5 +5,5 @@ import models.Point;
 public interface PointMonitorMBean {
     int getCountAllPoints();
     int getCountWrongPoints();
-    void notifyIfPointOutsideArea(Point point);
+    void notifyIfPointOutsideArea(double x, double y, double radius);
 }

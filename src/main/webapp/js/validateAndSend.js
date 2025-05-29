@@ -29,7 +29,7 @@ function validateInputFromMouse(event) {
     const x = event.clientX - rect.left - svgWidth / 2;
     const y = svgHeight / 2 - (event.clientY - rect.top);
 
-    const scaledX = Math.round((x / (svgWidth / 2)) * range);
+    const scaledX = (x / (svgWidth / 2)) * range;
     const scaledY = (y / (svgHeight / 2)) * range;
 
     console.log(`Clicked coordinates: x = ${scaledX}, y = ${scaledY}`);

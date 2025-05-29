@@ -15,10 +15,6 @@ public class AreaCheck implements Serializable {
         return checkSquare(x, y, r) || checkCircle(x, y, r) || checkTriangle(x, y, r);
     }
 
-    public static double calculateArea(Point point) {
-        double r = point.getR();
-        return r*r*(1+3.14/4);
-    }
 
     private boolean checkSquare(double x, double y, double r){
         return (y>=0 && y<=r/2 && x >= 0 && x <= r);

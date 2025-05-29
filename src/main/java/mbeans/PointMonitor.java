@@ -1,14 +1,7 @@
 package mbeans;
 
-import jakarta.annotation.PostConstruct;
-import jakarta.annotation.PreDestroy;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Named;
-import models.Point;
 
 import javax.management.*;
-import java.io.Serializable;
-import java.lang.management.ManagementFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
 
@@ -22,31 +15,6 @@ public class PointMonitor implements PointMonitorMBean, NotificationEmitter {
     private final NotificationBroadcasterSupport broadcaster = new NotificationBroadcasterSupport();
     private long sequenceNumber = 1;
 
-    @PostConstruct
-    public void registerMBean() {
-        try {
-            MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
-            ObjectName name = new ObjectName("mbeans:type=PointMonitor");
-            if (!mbs.isRegistered(name)) {
-                mbs.registerMBean(this, name);
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to register MBean", e);
-        }
-    }
-
-    @PreDestroy
-    public void unregisterMBean() {
-        try {
-            MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
-            ObjectName name = new ObjectName("mbeans:type=PointMonitor");
-            if (mbs.isRegistered(name)) {
-                mbs.unregisterMBean(name);
-            }
-        } catch (Exception e) {
-            // Логирование ошибки
-        }
-    }
 
     @Override
     public int getCountAllPoints() {
@@ -59,42 +27,39 @@ public class PointMonitor implements PointMonitorMBean, NotificationEmitter {
     }
 
     @Override
-    public void notifyIfPointOutsideArea(Point point) {
+    public void notifyIfPointOutsideArea(double x, double y, double r) {
         totalPoints.incrementAndGet();
-
-        if (!isPointOutsideArea(point)) {
+        boolean fl = (y>=0 && y<=r/2 && x >= 0 && x <= r) || (x <= 0 && y <= 0 && Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2)) <= r/2) || (0 <= x) && (y <= 0) && (y >= x - r);
+        if (!fl) {
             wrongPoints.incrementAndGet();
-            sendNotification(point);
+            sendNotification(x, y);
         }
     }
 
-    private boolean isPointOutsideArea(Point point) {
-        return point.getisHit();
-    }
-
-    private void sendNotification(Point point) {
-        Notification notification = new Notification(
-                "PointOutsideArea",
-                this,
-                sequenceNumber++,
+    private void sendNotification(double x, double y) {
+        Notification n = new Notification(
+                "PointOutsideArea", this, sequenceNumber++,
                 System.currentTimeMillis(),
-                String.format("Точка (%.2f, %.2f) вне области!", point.getX(), point.getY())
+                String.format("Точка (%.2f, %.2f) вне области!", x, y)
         );
-        broadcaster.sendNotification(notification);
-    }
-
-    // Реализация методов NotificationEmitter
-    @Override
-    public void addNotificationListener(NotificationListener listener,
-                                        NotificationFilter filter,
-                                        Object handback) {
-        broadcaster.addNotificationListener(listener, filter, handback);
+        broadcaster.sendNotification(n);
     }
 
     @Override
-    public void removeNotificationListener(NotificationListener listener)
-            throws ListenerNotFoundException {
-        broadcaster.removeNotificationListener(listener);
+    public void addNotificationListener(NotificationListener l, NotificationFilter f, Object h) {
+        broadcaster.addNotificationListener(l, f, h);
+    }
+
+    @Override
+    public void removeNotificationListener(NotificationListener l) throws ListenerNotFoundException {
+        broadcaster.removeNotificationListener(l);
+    }
+
+    @Override
+    public void removeNotificationListener(NotificationListener l,
+                                           NotificationFilter f,
+                                           Object h) throws ListenerNotFoundException {
+        broadcaster.removeNotificationListener(l, f, h);
     }
 
     @Override
@@ -106,10 +71,5 @@ public class PointMonitor implements PointMonitorMBean, NotificationEmitter {
                         "Уведомление о точке вне области"
                 )
         };
-    }
-
-    @Override
-    public void removeNotificationListener(NotificationListener listener, NotificationFilter filter, Object handback) throws ListenerNotFoundException {
-        broadcaster.removeNotificationListener(listener, filter, handback);
     }
 }

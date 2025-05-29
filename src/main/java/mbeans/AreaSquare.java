@@ -1,12 +1,9 @@
 package mbeans;
 
-import models.Point;
-
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class AreaSquare implements AreaSquareMBean{
 
-    private final double areaSquare = new AtomicInteger();
+    private double areaSquare = 0;
 
     @Override
     public double getAreaSquare() {
@@ -14,7 +11,7 @@ public class AreaSquare implements AreaSquareMBean{
     }
 
     @Override
-    public void setAreaSquare(double areaSquare) {
+    public void makeAreaSquare(double areaSquare) {
         this.areaSquare = areaSquare;
     }
 

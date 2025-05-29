@@ -13,11 +13,9 @@ import java.io.Serializable;
 @Named("validation")
 @ApplicationScoped
 public class Validation implements Serializable {
-    private final AreaSquare areaSquare = new AreaSquare();
     @Inject
     AreaCheck areaCheck;
     public boolean validate(double x, double y, double r) {
-        areaSquare.setAreaSquare(8);
         return (validateX(x) && validateY(y) && validateR(r));
     }
 
